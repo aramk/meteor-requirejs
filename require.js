@@ -1,3 +1,12 @@
+(function (global) {
+
+// Return global exports for Meteor.
+var exports = (function () {
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// START ORGINAL SCRIPT
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /** vim: et:ts=4:sw=4:sts=4
  * @license RequireJS 2.1.14 Copyright (c) 2010-2014, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
@@ -2074,3 +2083,20 @@ var requirejs, require, define;
     //Set up with config info.
     req(cfg);
 }(this));
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// END ORGINAL SCRIPT
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Return exports.
+return {define: define, require: require, requirejs: requirejs};
+
+})();
+
+// Bind exports to global. The direct property assignment is necessary to use these variables in the global
+// scope outside Meteor files (E.g. inside other modules).
+define = global.define = exports.define;
+require = global.require = exports.require;
+requirejs = global.requirejs = exports.requirejs;
+
+})(this);

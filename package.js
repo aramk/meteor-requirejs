@@ -1,5 +1,12 @@
-Package.on_use(function (api) {
-  api.export(['define', 'require', 'requirejs'], ['client', 'server']);
-  // TODO(aramk) Conflicts on the server prevent usage for now.
-  api.add_files(['require.js'], ['client']);
+Package.describe({
+  name: "aramk:requirejs",
+  summary: "A file and module loader for JavaScript.",
+  version: "2.1.14",
+  git: "https://github.com/aramk/meteor-requirejs.git"
+});
+
+Package.onUse(function(api) {
+  api.export(['define', 'require', 'requirejs'], 'client');
+  api.export(['requirejs'], 'server');
+  api.addFiles(['require.js'], ['client', 'server']);
 });

@@ -1235,7 +1235,15 @@ var requirejs, require, define;
             while (defQueue.length) {
                 args = defQueue.shift();
                 if (args[0] === null) {
-                    return onError(makeError('mismatch', 'Mismatched anonymous define() module: ' + args[args.length - 1]));
+                    var msg = 'Mismatched anonymous define() module: ' + args[args.length - 1];
+                    if (typeof Meteor !== 'undefined') {
+                        // Meteor packages are loaded in script tags and should not be defined
+                        // unless a module ID is provided. Show a warning at most.
+                        console.warn(msg);
+                        return;
+                    } else {
+                        return onError(makeError('mismatch', msg));
+                    }
                 } else {
                     //args are id, deps, factory. Should be normalized by the
                     //define() function.

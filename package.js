@@ -7,6 +7,6 @@ Package.describe({
 
 Package.onUse(function(api) {
   api.export(['define', 'require', 'requirejs'], 'client');
-  api.export(['requirejs'], 'server');
+  api.export(['define', 'requirejs'], 'server');
   api.addFiles(['require.js'], ['client', 'server']);
 });

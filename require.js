@@ -2093,10 +2093,8 @@ return {define: define, require: require, requirejs: requirejs};
 
 })();
 
-// Bind exports to global. The direct property assignment is necessary to use these variables in the
-// global scope outside Meteor files (E.g. inside other modules).
-define = global.define = exports.define;
-require = global.require = exports.require;
-requirejs = global.requirejs = exports.requirejs;
+define = exports.define;
+require = exports.require;
+requirejs = exports.requirejs;
 
 })(this);

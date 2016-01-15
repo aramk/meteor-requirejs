@@ -32,7 +32,8 @@
         <li class="hbox"><a href="#afterload">Loading Code After Page Load</a><span class="spacer boxFlex"></span><span class="sect">&sect; 4.3</span></li>
         <li class="hbox"><a href="#webworker">Web Worker Support</a><span class="spacer boxFlex"></span><span class="sect">&sect; 4.4</span></li>
         <li class="hbox"><a href="#rhino">Rhino Support</a><span class="spacer boxFlex"></span><span class="sect">&sect; 4.5</span></li>
-        <li class="hbox"><a href="#errors">Handling Errors</a><span class="spacer boxFlex"></span><span class="sect">&sect; 4.6</span></li>
+        <li class="hbox"><a href="#nashorn">Nashorn Support</a><span class="spacer boxFlex"></span><span class="sect">&sect; 4.6</span></li>
+        <li class="hbox"><a href="#errors">Handling Errors</a><span class="spacer boxFlex"></span><span class="sect">&sect; 4.7</span></li>
     </ul>
     <li class="hbox"><a href="#plugins">Loader Plugins</a><span class="spacer boxFlex"></span><span class="sect">&sect;&sect; 5-5.4</span></li>
         <ul>
@@ -97,6 +98,7 @@ up locations of a group of scripts. All of these capabilities allow you to use s
                 <li>canvas.js</li>
             </ul></li>
             <li>app.js</li>
+            <li>require.js</li>
         </ul></li>
     </ul></li>
 </ul>
@@ -171,11 +173,11 @@ require(['foo'], function(foo) {
 });
 </code></pre>
 
-<p>If you want to to do <code>require()</code> calls in the HTML page, then it is best to not use data-main. data-main is only intended for use when the page just has one main entry point, the data-main script. For pages that want to do inline <code>require()</code> calls, it is best to nest those inside a <code>require()</code> call for the configuration:</p>
+<p>If you want to do <code>require()</code> calls in the HTML page, then it is best to not use data-main. data-main is only intended for use when the page just has one main entry point, the data-main script. For pages that want to do inline <code>require()</code> calls, it is best to nest those inside a <code>require()</code> call for the configuration:</p>
 
 <pre><code>&lt;script src="scripts/require.js"&gt;&lt;/script&gt;
 &lt;script&gt;
-require(['scripts/config']), function() {
+require(['scripts/config'], function() {
     // Configuration loaded now, safe to do other require calls
     // that depend on that config.
     require(['foo'], function(foo) {
@@ -318,7 +320,7 @@ direct alignment of dependency name to the local variable used for that dependen
 
 <p>This wrapper relies on Function.prototype.toString() to give a useful string value of the function contents. This does not work on some devices like the PS3 and some older Opera mobile browsers. Use the <a href="optimization.html">optimizer</a> to pull out the dependencies in the array format for use on those devices.</p>
 
-<p>More information is available on the <a href="commonjs.html">CommonJS page</a>, and in the in the <a href="whyamd.html#sugar">"Sugar" section in the Why AMD page</a>.
+<p>More information is available on the <a href="commonjs.html">CommonJS page</a>, and in the <a href="whyamd.html#sugar">"Sugar" section in the Why AMD page</a>.
 </div>
 
 
@@ -343,7 +345,7 @@ direct alignment of dependency name to the local variable used for that dependen
 
 <h4><a href="#modulenotes" name="modulenotes">Other Module Notes</a><span class="sectionMark">&sect; 1.3.7</span></h4>
 
-<p id="modulenotes-onemodule"><strong>One module per file.</strong>: Only one module should be defined per JavaScript file, given the nature of the module name-to-file-path lookup algorithm. Multiple modules will be grouped into optimized files by the <a href="optimization.html">optimization tool</a>, but you should only use the optimization tool to place more than one module in a file.</p>
+<p id="modulenotes-onemodule"><strong>One module per file.</strong>: Only one module should be defined per JavaScript file, given the nature of the module name-to-file-path lookup algorithm. You shoud only use the <a href="optimization.html">optimization tool</a> to group multiple modules into optimized files.</p>
 
 <p id="modulenotes-relative"><strong>Relative module names inside define()</strong>: For require("./relative/name") calls that can happen inside a define() function call, be sure to ask for "require" as a dependency, so that the relative name is resolved correctly:</p>
 
@@ -364,6 +366,39 @@ direct alignment of dependency name to the local variable used for that dependen
 <p>Relative paths are really useful if you are creating a few modules inside a directory, so that you can share the directory with other people or other projects, and you want to be able to get a handle on the sibling modules in that directory without
 having to know the directory's name.</p>
 
+<p id="modulenotes-relative-names"><strong>Relative module names are relative to other names, not paths</strong>: The loader stores modules by their name and not by their path internally. So for relative name references, those are resolved relative to the module name making the reference, then that module name, or ID, is converted to a path if needs to be loaded. Example code for a 'compute' package that has a 'main' and 'extras' modules in it:</p>
+
+<pre><code>* lib/
+    * compute/
+        * main.js
+        * extras.js
+</code></pre>
+
+<p>where the main.js module looks like this:</p>
+
+<pre><code>define(["./extras"], function(extras) {
+    //Uses extras in here.
+});
+</code></pre>
+
+<p>If this was the paths config:</p>
+
+<pre><code>require.config({
+    baseUrl: 'lib',
+    paths: {
+      'compute': 'compute/main'
+    }
+});
+</code></pre>
+
+<p>And a <code>require(['compute'])</code> is done, then lib/compute/main.js will have the module name of 'compute'. When it asks for './extras', that is resolved relative to 'compute', so 'compute/./extras', which normalizes to just 'extras'. Since there is no paths config for that module name, the path generated will be for 'lib/extras.js', which is incorrect.</p>
+
+<p>For this case, <a href="#packages">packages config</a> is a better option, since it allows setting the main module up as 'compute', but internally the loader will store the module with the ID of 'compute/main' so that the relative reference for './extras' works.</p>
+
+<p>Another option is to construct a module at lib/compute.js that is just <code>define(['./compute/main'], function(m) { return m; });</code>, then there is no need for paths or packages config.</p>
+
+<p>Or, do not set that paths or packages config and do the top level require call as <code>require(['compute/main'])</code>.</p>
+
 <p id="modulenotes-urls"><strong>Generate URLs relative to module</strong>: You may need to generate an URL that is relative to a module. To do so, ask for "require" as a dependency and then use require.toUrl() to generate the URL:</p>
 
 <pre><code>define(["require"], function(require) {
@@ -371,12 +406,12 @@ having to know the directory's name.</p>
 });
 </code></pre>
 
-<p id="modulenotes-console"><strong>Console debugging</strong>: If you need to work with a module you already loaded via a require(["module/name"], function(){}) call in the JavaScript console, then you can use  the require() form that just uses the string name of the module to fetch it:</p>
+<p id="modulenotes-console"><strong>Console debugging</strong>: If you need to work with a module you already loaded via a <code>require(["module/name"], function(){})</code> call in the JavaScript console, then you can use  the require() form that just uses the string name of the module to fetch it:</p>
 
 <pre><code>require("module/name").callSomeFunction()
 </code></pre>
 
-<p>Note this only works if "module/name" was previously loaded via the async version of require: require(["module/name"]). If using a relative path, like './module/name', those only work inside define</p>
+<p>Note this only works if "module/name" was previously loaded via the async version of require: <code>require(["module/name"])</code>. If using a relative path, like './module/name', those only work inside define</p>
 </div>
 
 <div class="subSection">
@@ -486,7 +521,7 @@ module loading that may use that module. See the <a href="#errbacks">errback sec
 
 <p>RequireJS loads each dependency as a script tag, using head.appendChild().</p>
 
-<p>RequireJS waits for all dependencies to load, figures out the right order in which to call the functions that define the modules, then calls the module definition functions in the right order.</p>
+<p>RequireJS waits for all dependencies to load, figures out the right order in which to call the functions that define the modules, then calls the module definition functions once the dependencies for those functions have been called. Note that the dependencies for a given module definition function could be called in any order, due to their sub-dependency relationships and network load order.</p>
 
 <p>Using RequireJS in a server-side JavaScript environment that has synchronous loading should be as easy as redefining require.load(). The build system does this, the require.load method for that environment can be found in build/jslib/requirePatch.js.</p>
 
@@ -830,7 +865,7 @@ define(['module'], function (module) {
 
 <p id="config-packages"><strong><a href="#config-packages">packages</a></strong>: configures loading modules from CommonJS packages. See the <a href="#packages">packages topic</a> for more information.</p>
 
-<p id="config-nodeIdCompat"><strong><a href="#config-nodeIdCompat">nodeIdCompat</a></strong>: Node treats module ID <code>example.js</code> and <code>example</code> the same. By default these are two different IDs in RequireJS. If you end up using modules installed from npm, then you may need to set this config value to <code>true</code> to avoid resolution issues.</p>
+<p id="config-nodeIdCompat"><strong><a href="#config-nodeIdCompat">nodeIdCompat</a></strong>: Node treats module ID <code>example.js</code> and <code>example</code> the same. By default these are two different IDs in RequireJS. If you end up using modules installed from npm, then you may need to set this config value to <code>true</code> to avoid resolution issues. Available in 2.1.10 and greater.</p>
 
 <p id="config-waitSeconds"><strong><a href="#config-waitSeconds">waitSeconds</a></strong>: The number of seconds to wait before giving up on loading a script. Setting it to 0 disables the timeout. The default is 7 seconds.</p>
 
@@ -1049,7 +1084,12 @@ function(require,   alpha,   beta) {
 <p>RequireJS can be used in Rhino via the <a href="download.html#rjs">r.js adapter</a>.
 See <a href="https://github.com/jrburke/r.js/blob/master/README.md">the r.js README</a> for more information.</p>
 
-<h3><a href="#errors" name="errors">Handling Errors</a><span class="sectionMark">&sect; 4.6</span></h3>
+<h3><a href="#nashorn" name="nashorn">Nashorn Support</a><span class="sectionMark">&sect; 4.6</span></h3>
+
+<p>As of RequireJS 2.1.16, RequireJS can be used in <a href="http://www.oracle.com/technetwork/articles/java/jf14-nashorn-2126515.html">Nashorn</a>, Java 8+'s JavaScript engine, via the <a href="download.html#rjs">r.js adapter</a>.
+See <a href="https://github.com/jrburke/r.js/blob/master/README.md">the r.js README</a> for more information.</p>
+
+<h3><a href="#errors" name="errors">Handling Errors</a><span class="sectionMark">&sect; 4.7</span></h3>
 
 <p>The general class of errors are 404s for scripts (not found), network timeouts or errors in the scripts that are loaded. RequireJS has a few tools to deal with them: require-specific errbacks, a "paths" array config, and a global requirejs.onError.</p>
 
@@ -1082,7 +1122,7 @@ See <a href="https://github.com/jrburke/r.js/blob/master/README.md">the r.js REA
 
 <p><b>NOTE</b>: If you do set enforceDefine: true, and you use data-main="" to load your main JS module, then that main JS module <b>must call define()</b> instead of require() to load the code it needs. The main JS module can still call require/requirejs to set config values, but for loading modules it should use define().</p>
 
-<p>If you then also use <a href="https://github.com/jrburke/almond">almond</a> to build your code without require.js, be sure to use the <a href="https://github.com/jrburke/r.js/blob/master/build/example.build.js#L289">insertRequire</a> build setting to insert a require call for the main module -- that serves the same purpose of the initial require() call that data-main does.</p>
+<p>If you then also use <a href="https://github.com/jrburke/almond">almond</a> to build your code without require.js, be sure to use the <a href="https://github.com/jrburke/r.js/blob/master/build/example.build.js#L413">insertRequire</a> build setting to insert a require call for the main module -- that serves the same purpose of the initial require() call that data-main does.</p>
 
 <h4>
 <a href="#errbacks" name="errbacks">require([]) errbacks</a>
@@ -1300,7 +1340,7 @@ define({
 });
 </code></pre>
 
-<p>RequireJS will use the browser's navigator.language or navigator.userLanguage property to determine what locale values to use for my/nls/colors, so your app does not have to change. If you prefer to set the locale, you can use the <a href="#moduleconfig">module config</a> to pass the locale to the plugin:</p>
+<p>RequireJS will use the browser's navigator.languages, navigator.language or navigator.userLanguage property to determine what locale values to use for my/nls/colors, so your app does not have to change. If you prefer to set the locale, you can use the <a href="#config-moduleconfig">module config</a> to pass the locale to the plugin:</p>
 
 <pre><code>requirejs.config({
     config: {

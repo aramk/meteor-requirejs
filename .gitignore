@@ -8,3 +8,4 @@ tests/layers/allplugins-require.js
 tests/packages/optimizing/built/
 .build*
 .idea
+node_modules/

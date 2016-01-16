@@ -4,6 +4,7 @@ var hasToString = (function () {
     var test = 'hello world';
 }).toString().indexOf('hello world') !== -1;
 
+
 doh.registerUrl("simple", "../simple.html");
 
 //PS3 does not like this test
@@ -27,6 +28,8 @@ if (hasToString) {
     doh.registerUrl("cjsDotRequire", "../cjsSpace/cjsDotRequire.html");
     doh.registerUrl("packages", "../packages/packages.html");
     doh.registerUrl("packagesConfig", "../packages/config/config.html");
+    doh.registerUrl("packagesMultiLevel", "../packagesMultiLevel/packagesMultiLevel.html");
+    doh.registerUrl("packagesMultiLevelBuilt", "../packagesMultiLevel/packagesMultiLevel-built.html");
     doh.registerUrl("packagesNestedMain", "../packagesNestedMain/packagesNestedMain.html");
     doh.registerUrl("packagesNode", "../packagesNode/packagesNode.html");
     doh.registerUrl("packagesNodeAdapter", "../packagesNodeAdapter/packagesNodeAdapter.html");
@@ -52,6 +55,7 @@ doh.registerUrl("circularTranspiler", "../circular/transpiler/transpiler.html");
 
 doh.registerUrl("nestedRequire", "../nestedRequire/nestedRequire.html");
 
+doh.registerUrl("unorderedDefine", "../unorderedDefine/unorderedDefine.html");
 doh.registerUrl("depEmpty", "../depEmpty.html");
 doh.registerUrl("depoverlap", "../depoverlap.html");
 doh.registerUrl("urlfetch", "../urlfetch/urlfetch.html");
@@ -101,6 +105,7 @@ doh.registerUrl("mapConfigRelative", "../mapConfig/mapConfigRelative.html");
 doh.registerUrl("mapConfigSpecificity", "../mapConfig/mapConfigSpecificity.html");
 doh.registerUrl("mapConfigPlugin", "../mapConfig/mapConfigPlugin.html");
 doh.registerUrl("mapConfigPluginBuilt", "../mapConfig/built/mapConfigPluginBuilt.html");
+doh.registerUrl("secondLateConfigPlugin", "../secondLateConfigPlugin/secondLateConfigPlugin.html");
 
 doh.registerUrl("layers", "../layers/layers.html", 10000);
 
@@ -143,6 +148,7 @@ doh.registerUrl("pluginNormalize", "../plugins/pluginNormalize/pluginNormalize.h
 doh.registerUrl("requirePluginLoad", "../requirePluginLoad/requirePluginLoad.html");
 
 doh.registerUrl("requireAsync", "../requireAsync/requireAsync.html");
+doh.registerUrl("requireError", "../requireError/requireError.html");
 
 doh.registerUrl("issue379", "../issue379/issue379.html");
 
@@ -193,6 +199,8 @@ doh.registerUrl("errorGlobalOnError", "../error/globalOnError.html", 2000);
 doh.registerUrl("pluginErrorContinue", "../error/pluginErrorContinue.html", 8000);
 doh.registerUrl("pluginErrorContinueLocal", "../error/pluginErrorContinueLocal.html", 8000);
 doh.registerUrl("defineErrorLocal", "../error/defineErrorLocal.html");
+doh.registerUrl("errorChild", "../error/errorChild.html");
+
 
 doh.registerUrl("pathArray", "../pathArray/pathArray.html", 8000);
 doh.registerUrl("pathArrayWithMap", "../pathArray/withMap/withMap.html", 8000);

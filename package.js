@@ -1,7 +1,7 @@
 Package.describe({
   name: 'aramk:requirejs',
   summary: 'A file and module loader for JavaScript.',
-  version: '2.1.15_1',
+  version: '2.1.22',
   git: 'https://github.com/aramk/meteor-requirejs.git'
 });
 
